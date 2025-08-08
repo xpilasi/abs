@@ -6,7 +6,7 @@
         <div>
           <h1 class="text-xl font-semibold mb-1">Welcome back, {{ userName }}! 👋</h1>
           <p class="text-blue-100">{{ todayDate }}</p>
-          <p class="text-blue-100 text-sm mt-1">Room {{ user.room }} • Check-out: {{ user.checkOut }}</p>
+          <p class="text-blue-100 text-sm mt-1">Room {{ userProfile.room }} • Check-out: {{ userProfile.checkOut }}</p>
         </div>
         <div class="text-right">
           <div class="bg-white/20 px-3 py-2 rounded-lg backdrop-blur-sm">
@@ -97,7 +97,8 @@
 
 <script>
 import { Calendar, Clock, MapPin, Star, TrendingUp } from 'lucide-vue-next';
-import { mockActivities, mockUser } from '@/lib/mock-data.js';
+import { mockActivities } from '@/lib/mock-data.js';
+import { useAuth } from '@/composables/useAuth.js';
 import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
 import ImageWithFallback from '@/components/figma/ImageWithFallback.vue';
@@ -193,9 +194,12 @@ export default {
     ActivityCard
   },
   emits: ['navigate'],
+  setup() {
+    const { userProfile } = useAuth();
+    return { userProfile };
+  },
   data() {
     return {
-      user: mockUser,
       featuredActivities: mockActivities.slice(0, 3),
       popularActivity: mockActivities[6],
       Calendar,
@@ -204,7 +208,7 @@ export default {
   },
   computed: {
     userName() {
-      return this.user.name.split(' ')[0];
+      return this.userProfile.name ? this.userProfile.name.split(' ')[0] : 'Guest';
     },
     todayDate() {
       return new Date().toLocaleDateString('en-US', { 

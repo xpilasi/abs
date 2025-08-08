@@ -12,6 +12,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.54.0",
     "autoprefixer": "^10.4.21",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^0.539.0",

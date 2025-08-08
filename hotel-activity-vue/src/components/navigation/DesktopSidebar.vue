@@ -33,6 +33,18 @@
         <component :is="tab.icon" class="w-5 h-5 flex-shrink-0" />
         <span v-if="!isCollapsed" class="font-medium">{{ tab.label }}</span>
       </button>
+      
+      <!-- Separator -->
+      <div class="border-t border-gray-200 my-4"></div>
+      
+      <!-- Logout Button -->
+      <button
+        @click="$emit('logout')"
+        class="w-full flex items-center space-x-3 px-3 py-3 rounded-lg transition-colors text-red-600 hover:bg-red-50"
+      >
+        <LogOut class="w-5 h-5 flex-shrink-0" />
+        <span v-if="!isCollapsed" class="font-medium">Sign Out</span>
+      </button>
     </nav>
 
     <div v-if="!isCollapsed" class="absolute bottom-4 left-4 right-4">
@@ -50,7 +62,7 @@
 </template>
 
 <script>
-import { Home, Calendar, User, Activity, Menu, X } from 'lucide-vue-next';
+import { Home, Calendar, User, Activity, Menu, X, LogOut } from 'lucide-vue-next';
 
 export default {
   name: 'DesktopSidebar',
@@ -60,9 +72,10 @@ export default {
     User,
     Activity,
     Menu,
-    X
+    X,
+    LogOut
   },
-  emits: ['tab-change'],
+  emits: ['tab-change', 'logout'],
   props: {
     activeTab: {
       type: String,

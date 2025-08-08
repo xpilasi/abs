@@ -6,8 +6,30 @@
       <p class="text-gray-600">Manage your account and preferences</p>
     </div>
 
-    <!-- Profile Header -->
-    <ProfileHeader />
+          <!-- Profile Header -->
+      <ProfileHeader :user-profile="userProfile" />
+
+    <!-- Quick Logout Button -->
+    <Card class="p-4 border-2 border-red-200 bg-red-50">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
+            <LogOut class="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h3 class="font-semibold text-red-900">Cerrar Sesión</h3>
+            <p class="text-sm text-red-700">Salir de forma segura de tu cuenta</p>
+          </div>
+        </div>
+        <Button 
+          @click="$emit('logout')"
+          class="bg-red-600 hover:bg-red-700 text-white border-0"
+        >
+          <LogOut class="w-4 h-4 mr-2" />
+          Salir
+        </Button>
+      </div>
+    </Card>
 
     <!-- Stats -->
     <StatsCard />
@@ -33,6 +55,9 @@
         </div>
       </div>
     </Card>
+
+    <!-- Staff Dashboard (Solo para Staff) -->
+    <StaffDashboard v-if="userProfile.role === 'staff'" />
 
     <!-- Settings -->
     <SettingsSection />
@@ -69,8 +94,8 @@
       
       <MenuOption
         :icon="LogOut"
-        title="Sign Out"
-        description="Sign out of your account"
+        title="Cerrar Sesión"
+        description="Salir de tu cuenta"
         variant="danger"
         @click="$emit('logout')"
       />
@@ -109,9 +134,17 @@ import {
   Calendar,
   MapPin,
   Phone,
-  Mail
+  Mail,
+  Users,
+  Briefcase,
+  Crown,
+  Shield,
+  BarChart3,
+  UserCheck,
+  Activity,
+  Clipboard
 } from 'lucide-vue-next';
-import { mockUser } from '@/lib/mock-data.js';
+import { useAuth } from '@/composables/useAuth.js';
 import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
 import Avatar from '@/components/ui/Avatar.vue';
@@ -122,45 +155,85 @@ import ImageWithFallback from '@/components/figma/ImageWithFallback.vue';
 // Profile Header Component
 const ProfileHeader = {
   name: 'ProfileHeader',
-  components: { Card, Avatar, Badge, Button, Camera, MapPin, Calendar, Edit },
-  data() {
-    return {
-      user: mockUser
-    };
+  components: { Card, Avatar, Badge, Button, Camera, MapPin, Calendar, Edit, Users, Briefcase, Crown, Shield },
+  props: {
+    userProfile: {
+      type: Object,
+      required: true
+    }
+  },
+  computed: {
+    isStaff() {
+      return this.userProfile.role === 'staff';
+    },
+    roleInfo() {
+      return this.isStaff 
+        ? { 
+            label: 'Personal del Hotel', 
+            icon: 'Briefcase',
+            bgColor: 'bg-purple-100', 
+            textColor: 'text-purple-800',
+            description: 'Staff Member'
+          }
+        : { 
+            label: 'Huésped VIP', 
+            icon: 'Crown',
+            bgColor: 'bg-blue-100', 
+            textColor: 'text-blue-800',
+            description: 'VIP Guest'
+          };
+    },
+    buttonColors() {
+      return this.isStaff 
+        ? 'bg-purple-600 hover:bg-purple-700 text-white'
+        : 'bg-blue-600 hover:bg-blue-700 text-white';
+    },
+    cameraButtonColors() {
+      return this.isStaff 
+        ? 'bg-purple-600 hover:bg-purple-700'
+        : 'bg-blue-600 hover:bg-blue-700';
+    }
   },
   template: `
     <Card class="p-6">
       <div class="flex items-center space-x-4">
         <div class="relative">
           <Avatar 
-            :src="user.avatar" 
-            :alt="user.name"
+            :src="userProfile.avatar" 
+            :alt="userProfile.name"
             class="w-20 h-20"
           />
-          <button class="absolute -bottom-1 -right-1 bg-blue-600 p-2 rounded-full text-white hover:bg-blue-700">
+          <button :class="'absolute -bottom-1 -right-1 p-2 rounded-full text-white ' + cameraButtonColors">
             <Camera class="w-3 h-3" />
           </button>
         </div>
         
         <div class="flex-1">
           <div class="flex items-center space-x-2 mb-1">
-            <h2 class="text-xl font-semibold text-gray-900">{{ user.name }}</h2>
-            <Badge class="bg-yellow-100 text-yellow-800">VIP Guest</Badge>
+            <h2 class="text-xl font-semibold text-gray-900">{{ userProfile.name }}</h2>
+            <Badge :class="roleInfo.bgColor + ' ' + roleInfo.textColor">
+              <component :is="roleInfo.icon" class="w-3 h-3 mr-1" />
+              {{ roleInfo.label }}
+            </Badge>
           </div>
-          <p class="text-gray-600 mb-2">{{ user.email }}</p>
+          <p class="text-gray-600 mb-2">{{ userProfile.email }}</p>
           <div class="flex items-center space-x-4 text-sm text-gray-500">
             <div class="flex items-center space-x-1">
               <MapPin class="w-4 h-4" />
-              <span>Room {{ user.room }}</span>
+              <span>{{ isStaff ? 'Staff Area' : 'Room ' + userProfile.room }}</span>
             </div>
-            <div class="flex items-center space-x-1">
+            <div v-if="!isStaff" class="flex items-center space-x-1">
               <Calendar class="w-4 h-4" />
-              <span>Check-out: {{ user.checkOut }}</span>
+              <span>Check-out: {{ userProfile.checkOut }}</span>
+            </div>
+            <div v-if="isStaff" class="flex items-center space-x-1">
+              <Shield class="w-4 h-4" />
+              <span>{{ roleInfo.description }}</span>
             </div>
           </div>
         </div>
         
-        <Button variant="outline" size="sm">
+        <Button :class="'text-white border-0 ' + buttonColors" size="sm">
           <Edit class="w-4 h-4 mr-2" />
           Edit
         </Button>
@@ -193,6 +266,80 @@ const StatsCard = {
           <p class="text-2xl font-bold text-purple-600">$480</p>
           <p class="text-sm text-gray-600">Total Spent</p>
         </div>
+      </div>
+    </Card>
+  `
+};
+
+// Staff Dashboard Component
+const StaffDashboard = {
+  name: 'StaffDashboard',
+  components: { Card, Button, BarChart3, UserCheck, Activity, Clipboard, Briefcase },
+  template: `
+    <Card class="p-6 border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-purple-100">
+      <div class="flex items-center space-x-3 mb-6">
+        <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+          <Briefcase class="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-900">Staff Dashboard</h3>
+          <p class="text-sm text-purple-700">Hotel management tools</p>
+        </div>
+      </div>
+
+      <!-- Staff Stats -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div class="text-center p-3 bg-white rounded-lg border border-purple-200">
+          <p class="text-2xl font-bold text-purple-600">48</p>
+          <p class="text-xs text-gray-600">Active Guests</p>
+        </div>
+        <div class="text-center p-3 bg-white rounded-lg border border-purple-200">
+          <p class="text-2xl font-bold text-green-600">23</p>
+          <p class="text-xs text-gray-600">Today's Bookings</p>
+        </div>
+        <div class="text-center p-3 bg-white rounded-lg border border-purple-200">
+          <p class="text-2xl font-bold text-orange-600">95%</p>
+          <p class="text-xs text-gray-600">Occupancy</p>
+        </div>
+        <div class="text-center p-3 bg-white rounded-lg border border-purple-200">
+          <p class="text-2xl font-bold text-blue-600">4.8</p>
+          <p class="text-xs text-gray-600">Satisfaction</p>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Button 
+          class="bg-purple-600 hover:bg-purple-700 text-white border-0 flex-col h-auto py-3 px-2"
+          size="sm"
+        >
+          <BarChart3 class="w-4 h-4 mb-1" />
+          <span class="text-xs">Analytics</span>
+        </Button>
+        
+        <Button 
+          class="bg-purple-600 hover:bg-purple-700 text-white border-0 flex-col h-auto py-3 px-2"
+          size="sm"
+        >
+          <UserCheck class="w-4 h-4 mb-1" />
+          <span class="text-xs">Guests</span>
+        </Button>
+        
+        <Button 
+          class="bg-purple-600 hover:bg-purple-700 text-white border-0 flex-col h-auto py-3 px-2"
+          size="sm"
+        >
+          <Activity class="w-4 h-4 mb-1" />
+          <span class="text-xs">Activities</span>
+        </Button>
+        
+        <Button 
+          class="bg-purple-600 hover:bg-purple-700 text-white border-0 flex-col h-auto py-3 px-2"
+          size="sm"
+        >
+          <Clipboard class="w-4 h-4 mb-1" />
+          <span class="text-xs">Reports</span>
+        </Button>
       </div>
     </Card>
   `
@@ -302,12 +449,17 @@ export default {
     ImageWithFallback,
     ProfileHeader,
     StatsCard,
+    StaffDashboard,
     SettingsSection,
     MenuOption,
     Phone,
     Mail
   },
   emits: ['logout'],
+  setup() {
+    const { userProfile } = useAuth();
+    return { userProfile };
+  },
   data() {
     return {
       CreditCard,

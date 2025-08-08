@@ -11,6 +11,9 @@ Una aplicación completa de gestión de actividades hoteleras desarrollada con V
 - **Navegación adaptativa**: Sidebar en desktop, bottom navigation en móvil
 - **Gestión de estado local**: Sin librerías externas adicionales
 - **Componentes reutilizables**: UI components modulares
+- **🔐 Autenticación con Supabase**: Sistema completo de login/registro
+- **Gestión de usuarios**: Perfiles autenticados y protección de rutas
+- **Estados de sesión**: Persistencia automática de sesiones
 
 ## 📱 Pantallas Principales
 
@@ -45,11 +48,20 @@ Una aplicación completa de gestión de actividades hoteleras desarrollada con V
 - Actividades favoritas
 - Contacto con conserjería
 
+### 🔐 Authentication Screen
+- Login con email y contraseña
+- Registro de nuevos usuarios con roles
+- Recuperación de contraseña
+- Verificación por email
+- Persistencia de sesión
+- Sistema de logout múltiple
+
 ## 🛠️ Tecnologías Utilizadas
 
 - **Vue 3** - Framework JavaScript progresivo
 - **Vite** - Build tool ultrarrápido
 - **Tailwind CSS 4** - Framework CSS utility-first
+- **Supabase** - Backend-as-a-Service para autenticación
 - **Lucide Vue Next** - Iconos modernos
 - **Clsx** - Utilidad para clases condicionales
 
@@ -66,12 +78,18 @@ Una aplicación completa de gestión de actividades hoteleras desarrollada con V
    npm install
    ```
 
-3. **Ejecutar en desarrollo**
+3. **Configurar Supabase** (Ver `SUPABASE_SETUP.md` para detalles)
+   ```bash
+   cp supabase-config.example.js supabase-config.js
+   # Editar supabase-config.js con tus credenciales
+   ```
+
+4. **Ejecutar en desarrollo**
    ```bash
    npm run dev
    ```
 
-4. **Abrir en el navegador**
+5. **Abrir en el navegador**
    ```
    http://localhost:5173
    ```
@@ -83,12 +101,17 @@ src/
 ├── assets/
 │   └── styles.css          # Estilos globales y Tailwind
 ├── components/
+│   ├── auth/               # Componentes de autenticación
+│   │   ├── LoginForm.vue
+│   │   ├── RegisterForm.vue
+│   │   └── ForgotPasswordForm.vue
 │   ├── figma/
 │   │   └── ImageWithFallback.vue
 │   ├── navigation/
 │   │   ├── DesktopSidebar.vue
 │   │   └── MobileBottomNav.vue
 │   ├── screens/
+│   │   ├── AuthScreen.vue
 │   │   ├── HomeScreen.vue
 │   │   ├── ActivitiesScreen.vue
 │   │   ├── ActivityDetailScreen.vue
@@ -103,11 +126,13 @@ src/
 │       ├── Switch.vue
 │       └── Tabs.vue
 ├── composables/
-│   └── useMobile.js        # Composable para detección móvil
+│   ├── useMobile.js        # Composable para detección móvil
+│   └── useAuth.js          # Composable para autenticación
 ├── lib/
 │   ├── mock-data.js        # Datos de prueba
 │   ├── types.js            # Tipos JSDoc
-│   └── utils.js            # Utilidades
+│   ├── utils.js            # Utilidades
+│   └── supabase.js         # Cliente de Supabase
 ├── App.vue                 # Componente principal
 └── main.js                 # Punto de entrada
 ```
@@ -133,6 +158,31 @@ src/
 - Avatares con fallback automático
 - Switches personalizados
 - Tabs con navegación fluida
+
+## 🔐 Sistema de Autenticación
+
+### Configuración con Supabase
+- **Cliente configurado** con auto-refresh de tokens
+- **Persistencia de sesión** automática
+- **Protección de rutas** completa
+- **Gestión de errores** integrada
+
+### Flujo de Autenticación
+1. **Pantalla inicial**: Verificación de sesión
+2. **Login/Registro**: Formularios con validación
+3. **Verificación email**: Confirmación automática
+4. **Acceso completo**: Todas las funcionalidades desbloqueadas
+5. **Logout**: Limpieza segura de sesión
+
+### Funcionalidades de Auth
+- ✅ Registro de usuarios con validación
+- ✅ Login con email/contraseña
+- ✅ Recuperación de contraseña
+- ✅ Verificación por email
+- ✅ Persistencia de sesión
+- ✅ Auto-refresh de tokens
+- ✅ Protección de rutas
+- ✅ Gestión de perfil de usuario
 
 ## 📊 Gestión de Datos
 
@@ -188,13 +238,15 @@ npm run preview
 
 ## 🎯 Próximas Funcionalidades
 
-- [ ] Autenticación de usuarios
+- [x] ✅ Autenticación de usuarios (Completado)
 - [ ] Integración con API real
 - [ ] Notificaciones push
 - [ ] Modo oscuro
 - [ ] Internacionalización (i18n)
 - [ ] PWA capabilities
 - [ ] Animaciones avanzadas
+- [ ] Calendario de actividades
+- [ ] Sistema de calificaciones
 
 ## 🤝 Contribución
 

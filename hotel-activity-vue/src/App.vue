@@ -1,10 +1,31 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <!-- Auth Screen -->
+  <AuthScreen
+    v-if="!isAuthenticated && !isLoading"
+    @auth-success="handleAuthSuccess"
+  />
+
+  <!-- Loading Screen -->
+  <div
+    v-else-if="isLoading"
+    class="min-h-screen bg-gray-50 flex items-center justify-center"
+  >
+    <div class="text-center">
+      <div class="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4 animate-pulse">
+        <Activity class="w-8 h-8 text-white" />
+      </div>
+      <p class="text-gray-600">Loading your experience...</p>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div v-else :class="`min-h-screen bg-gray-50 ${isStaff ? 'theme-staff' : 'theme-guest'}`">
     <!-- Desktop Sidebar -->
     <DesktopSidebar
       v-if="!isMobile"
       :active-tab="currentTab"
       @tab-change="handleTabChange"
+      @logout="handleLogout"
     />
 
     <!-- Main Content -->
@@ -46,8 +67,10 @@
 
 <script>
 import { useMobile } from '@/composables/useMobile.js';
+import { useAuth } from '@/composables/useAuth.js';
 import MobileBottomNav from '@/components/navigation/MobileBottomNav.vue';
 import DesktopSidebar from '@/components/navigation/DesktopSidebar.vue';
+import AuthScreen from '@/components/screens/AuthScreen.vue';
 import HomeScreen from '@/components/screens/HomeScreen.vue';
 import ActivitiesScreen from '@/components/screens/ActivitiesScreen.vue';
 import ActivityDetailScreen from '@/components/screens/ActivityDetailScreen.vue';
@@ -55,7 +78,7 @@ import BookingsScreen from '@/components/screens/BookingsScreen.vue';
 import ProfileScreen from '@/components/screens/ProfileScreen.vue';
 import Button from '@/components/ui/Button.vue';
 import Card from '@/components/ui/Card.vue';
-import { Check, Calendar } from 'lucide-vue-next';
+import { Check, Calendar, Activity } from 'lucide-vue-next';
 
 // Booking Confirmation Modal Component
 const BookingConfirmation = {
@@ -98,16 +121,35 @@ export default {
   components: {
     MobileBottomNav,
     DesktopSidebar,
+    AuthScreen,
     HomeScreen,
     ActivitiesScreen,
     ActivityDetailScreen,
     BookingsScreen,
     ProfileScreen,
-    BookingConfirmation
+    BookingConfirmation,
+    Activity
   },
   setup() {
     const { isMobile } = useMobile();
-    return { isMobile };
+    const { 
+      isAuthenticated, 
+      isLoading, 
+      signOut, 
+      initializeAuth,
+      isStaff
+    } = useAuth();
+    
+    // Inicializar autenticación al montar el componente
+    initializeAuth();
+    
+    return { 
+      isMobile, 
+      isAuthenticated, 
+      isLoading, 
+      signOut,
+      isStaff
+    };
   },
   data() {
     return {
@@ -181,9 +223,18 @@ export default {
       this.showActivityDetail = false;
       this.selectedActivityId = null;
     },
-    handleLogout() {
-      // In a real app, this would clear authentication state
-      console.log('User logged out');
+    async handleLogout() {
+      const result = await this.signOut();
+      if (result.success) {
+        this.currentTab = 'home';
+        this.selectedActivityId = null;
+        this.showActivityDetail = false;
+      }
+    },
+    
+    handleAuthSuccess() {
+      // El usuario se ha autenticado exitosamente
+      console.log('User authenticated successfully');
     },
     handleViewBookings() {
       this.showBookingConfirmation = false;
